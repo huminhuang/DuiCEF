@@ -60,9 +60,9 @@ artifacts/
 *.pgd
 *.rsp
 *.sbr
-*.tlb
-*.tli
-*.tlh
+#*.tlb
+#*.tli
+#*.tlh
 *.tmp
 *.tmp_proj
 *.log
