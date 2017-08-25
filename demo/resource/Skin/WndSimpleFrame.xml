@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Window size="970,650" caption="0,0,0,30" showshadow="true" shadowimage="base\shadow_bg.png" shadowcorner="9,7,9,11">
+
+  <Font name="微软雅黑" id="0" size="16" bold="false" italic="false"/>
+
+  <!--默认button的样式-->
+  <Style name="BtnStyle" value="width=&quot;30&quot; height=&quot;24&quot;"/>
+
+  <VerticalLayout bkcolor="#ff2d2d30">
+
+    <!--菜单栏-->
+    <HorizontalLayout height="30">
+      <Text text="DuiCEF SimpleWindow" textcolor="#ff999999" textpadding="10,0,0,0" font="0" valign="vcenter"/>
+      <Control />
+      <Button name="btn_sysmin" width="36" height="24" tooltip="最小化"
+              normalimage="file='base\btn_sysmin.png' source='0,0,36,24'"
+              hotimage="file='base\btn_sysmin.png' source='36,0,72,24'"
+              pushedimage="file='base\btn_sysmin.png' source='72,0,108,24'"/>
+      <Button name="btn_sysclose" width="36" height="24" tooltip="关闭"
+              normalimage="file='base\btn_sysclose_w.png' source='0,0,36,24'"
+              hotimage="file='base\btn_sysclose_w.png' source='36,0,72,24'"
+              pushedimage="file='base\btn_sysclose_w.png' source='72,0,108,24'"/>
+    </HorizontalLayout>
+
+    <VerticalLayout inset="1,1,1,1" bkcolorcolor="#ffffffff">
+      <Cef homepage="www.huya.com"/>
+    </VerticalLayout>
+
+  </VerticalLayout>
+
+</Window>

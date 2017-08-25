@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="resource">
+      <UniqueIdentifier>{5ec4a135-8df9-460a-b765-02b9e0f4abe0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="main">
+      <UniqueIdentifier>{2ffde8d8-d1df-4971-9220-d7425741424f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="app">
+      <UniqueIdentifier>{7ec4d4be-a956-4655-8afd-0df2383d37c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="base">
+      <UniqueIdentifier>{c7c3cfcc-71e9-4e59-8284-a122c7bbdef5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="base\ControlEx">
+      <UniqueIdentifier>{5956650b-6ebd-4717-8c70-a612a7eebbcf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="base\Cef3">
+      <UniqueIdentifier>{94763acd-2031-4644-aa50-2e416ec21cc4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="base\Cef3\browser">
+      <UniqueIdentifier>{16968399-87e7-4646-a114-7ec853bf91c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="base\Cef3\common">
+      <UniqueIdentifier>{e961b2d5-f67e-46d4-8110-abb452e26b38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="base\Cef3\control">
+      <UniqueIdentifier>{5b06161e-5377-41a0-a39a-2b95a3d1917e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="base\Cef3\renderer">
+      <UniqueIdentifier>{00e2fc99-b182-4a8a-ac7e-73e34072b99e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="resource.h">
+      <Filter>resource</Filter>
+    </ClInclude>
+    <ClInclude Include="base\ControlEx\ControlEx.h">
+      <Filter>base\ControlEx</Filter>
+    </ClInclude>
+    <ClInclude Include="base\Cef3\cef_util.h">
+      <Filter>base\Cef3</Filter>
+    </ClInclude>
+    <ClInclude Include="base\Cef3\browser\client_browser_app.h">
+      <Filter>base\Cef3\browser</Filter>
+    </ClInclude>
+    <ClInclude Include="base\Cef3\browser\main_message_loop.h">
+      <Filter>base\Cef3\browser</Filter>
+    </ClInclude>
+    <ClInclude Include="base\Cef3\common\cef_main.h">
+      <Filter>base\Cef3\common</Filter>
+    </ClInclude>
+    <ClInclude Include="base\Cef3\common\cef_protocol.h">
+      <Filter>base\Cef3\common</Filter>
+    </ClInclude>
+    <ClInclude Include="base\Cef3\common\client_app.h">
+      <Filter>base\Cef3\common</Filter>
+    </ClInclude>
+    <ClInclude Include="base\Cef3\control\UICefBrowser.h">
+      <Filter>base\Cef3\control</Filter>
+    </ClInclude>
+    <ClInclude Include="base\Cef3\renderer\client_renderer_app.h">
+      <Filter>base\Cef3\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="base\Cef3\renderer\client_v8handler.h">
+      <Filter>base\Cef3\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="main\WndSimpleFrame.h">
+      <Filter>main</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="base\Cef3\browser\client_browser_app.cpp">
+      <Filter>base\Cef3\browser</Filter>
+    </ClCompile>
+    <ClCompile Include="base\Cef3\browser\main_message_loop.cpp">
+      <Filter>base\Cef3\browser</Filter>
+    </ClCompile>
+    <ClCompile Include="base\Cef3\common\client_app.cpp">
+      <Filter>base\Cef3\common</Filter>
+    </ClCompile>
+    <ClCompile Include="base\Cef3\control\UICefBrowser.cpp">
+      <Filter>base\Cef3\control</Filter>
+    </ClCompile>
+    <ClCompile Include="base\Cef3\renderer\client_renderer_app.cpp">
+      <Filter>base\Cef3\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="base\Cef3\renderer\client_v8handler.cpp">
+      <Filter>base\Cef3\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="main\WndSimpleFrame.cpp">
+      <Filter>main</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="demo.rc">
+      <Filter>resource</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>
