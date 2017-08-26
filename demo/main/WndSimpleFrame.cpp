@@ -117,23 +117,21 @@ LRESULT CWndSimpleFrame::OnNcHitTest(UINT uMsg, WPARAM wParam, LPARAM lParam, BO
 	return HTCLIENT;
 }
 
-LRESULT CWndSimpleFrame::OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+LRESULT CWndSimpleFrame::OnNcPaint(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	return FALSE;
+}
+
+LRESULT CWndSimpleFrame::OnNcCalcSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 { 
-	SIZE szRoundCorner = m_pm.GetRoundCorner();
-	if (!::IsIconic(*this) && (szRoundCorner.cx != 0 || szRoundCorner.cy != 0)) 
+	if (wParam == TRUE)
 	{
-		CDuiRect rcWnd;
-		::GetWindowRect(*this, &rcWnd);
-		rcWnd.Offset(-rcWnd.left, -rcWnd.top);
-		//rcWnd.right++; rcWnd.bottom++;
-		HRGN hRgn = ::CreateRoundRectRgn(rcWnd.left-1, rcWnd.top-1, rcWnd.right+1, rcWnd.bottom+1, szRoundCorner.cx, szRoundCorner.cy);
-		::SetWindowRgn(*this, hRgn, TRUE);
-		::DeleteObject(hRgn);
-		 
+		NCCALCSIZE_PARAMS * lpncsp = (NCCALCSIZE_PARAMS *)lParam;;
+
+		lpncsp->rgrc[0].bottom += -1;
 	}
-	
-	bHandled = FALSE;
-	return 0;
+
+	return GetLastError();
 }
 
 LRESULT CWndSimpleFrame::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -144,7 +142,8 @@ LRESULT CWndSimpleFrame::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_CREATE:			lRes = OnCreate(uMsg, wParam, lParam, bHandled); break;
 	case WM_NCACTIVATE:		lRes = OnNcActivate(uMsg, wParam, lParam, bHandled); break;
 	case WM_NCHITTEST:		lRes = OnNcHitTest(uMsg, wParam, lParam, bHandled); break;
-	case WM_SIZE:			lRes = OnSize(uMsg, wParam, lParam, bHandled); break;
+	case WM_NCPAINT:		lRes = OnNcPaint(uMsg, wParam, lParam, bHandled); break;
+	case WM_NCCALCSIZE:		lRes = OnNcCalcSize(uMsg, wParam, lParam, bHandled); break;
 
 default:
 	bHandled = FALSE;

@@ -8,7 +8,7 @@ template <class T>
 void CreateMainWnd(LPCTSTR pstrName)
 {
 	CWindowWnd *mainFrame = new T;
-	mainFrame->Create(NULL, pstrName, WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_MINIMIZEBOX, 0, 0, 0, -1, -1);
+	mainFrame->Create(NULL, pstrName,  WS_POPUP | WS_THICKFRAME, 0, 0, 0, -1, -1);
 	mainFrame->CenterWindow();
 	mainFrame->ShowWindow();
 }

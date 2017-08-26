@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<Window size="970,650" caption="0,0,0,30" showshadow="true" shadowimage="base\shadow_bg.png" shadowcorner="9,7,9,11">
+<Window size="970,650" caption="0,0,0,30" showshadow="false" shadowimage="base\shadow_bg.png" shadowcorner="9,7,9,11">
 
   <Font name="微软雅黑" id="0" size="16" bold="false" italic="false"/>
 
@@ -21,11 +21,11 @@
               hotimage="file='base\btn_sysclose_w.png' source='36,0,72,24'"
               pushedimage="file='base\btn_sysclose_w.png' source='72,0,108,24'"/>
     </HorizontalLayout>
-
-    <VerticalLayout inset="1,1,1,1" bkcolorcolor="#ffffffff">
-      <Cef homepage="www.huya.com"/>
+    
+    <VerticalLayout inset="1,0,1,0" bordersize="1" bordercolor="#ffaaaaaa">
+      <Cef homepage="www.huya.com"/> 
     </VerticalLayout>
-
+    
   </VerticalLayout>
 
 </Window>
