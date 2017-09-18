@@ -59,9 +59,9 @@ void CWndSimpleFrame::OnBtnClose()
 
 LRESULT CWndSimpleFrame::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-	LONG styleValue = ::GetWindowLong(*this, GWL_STYLE);
-	styleValue &= ~WS_CAPTION;
-	::SetWindowLong(*this, GWL_STYLE, styleValue|WS_CLIPCHILDREN|WS_CLIPSIBLINGS);
+	//LONG styleValue = ::GetWindowLong(*this, GWL_STYLE);
+	//styleValue &= ~WS_CAPTION;
+	//::SetWindowLong(*this, GWL_STYLE, styleValue|WS_CLIPCHILDREN|WS_CLIPSIBLINGS);
 
 	m_pm.Init( m_hWnd);
 
@@ -78,7 +78,8 @@ LRESULT CWndSimpleFrame::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 
 LRESULT CWndSimpleFrame::OnNcActivate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-	if (::IsIconic(*this)) bHandled = FALSE;
+	bHandled = FALSE;
+	if (::IsIconic(*this)) bHandled = TRUE;
 	return (wParam == 0) ? TRUE : FALSE;
 }
 
@@ -117,21 +118,30 @@ LRESULT CWndSimpleFrame::OnNcHitTest(UINT uMsg, WPARAM wParam, LPARAM lParam, BO
 	return HTCLIENT;
 }
 
-LRESULT CWndSimpleFrame::OnNcPaint(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
-{
-	return FALSE;
-}
-
 LRESULT CWndSimpleFrame::OnNcCalcSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
-{ 
+{
 	if (wParam == TRUE)
 	{
 		NCCALCSIZE_PARAMS * lpncsp = (NCCALCSIZE_PARAMS *)lParam;;
 
-		lpncsp->rgrc[0].bottom += -1;
-	}
+		lpncsp->rgrc[0].top		-= 5;
+		//lpncsp->rgrc[0].left	-= 7;
+		//lpncsp->rgrc[0].right	+= 7;
+		//lpncsp->rgrc[0].bottom	+= 7;
 
-	return GetLastError();
+		//lpncsp->lppos->x = 100;
+
+		int i = 0;
+		i++;
+	}
+	else
+	{
+		int i = 0;
+		i++;
+	}
+	
+	bHandled = FALSE;
+	return 0;
 }
 
 LRESULT CWndSimpleFrame::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -140,10 +150,16 @@ LRESULT CWndSimpleFrame::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	BOOL bHandled = TRUE;
 	switch( uMsg ) {
 	case WM_CREATE:			lRes = OnCreate(uMsg, wParam, lParam, bHandled); break;
-	case WM_NCACTIVATE:		lRes = OnNcActivate(uMsg, wParam, lParam, bHandled); break;
-	case WM_NCHITTEST:		lRes = OnNcHitTest(uMsg, wParam, lParam, bHandled); break;
-	case WM_NCPAINT:		lRes = OnNcPaint(uMsg, wParam, lParam, bHandled); break;
-	case WM_NCCALCSIZE:		lRes = OnNcCalcSize(uMsg, wParam, lParam, bHandled); break;
+	case WM_SIZE:
+		bHandled = FALSE;
+		break;
+	//case WM_PAINT: break;
+		//case WM_NCACTIVATE:		lRes = OnNcActivate(uMsg, wParam, lParam, bHandled); break;
+		//case WM_NCHITTEST:		lRes = OnNcHitTest(uMsg, wParam, lParam, bHandled); break;
+	//case WM_PAINTCLIPBOARD:
+	//case WM_SYNCPAINT:
+	//case WM_NCPAINT:		break;
+	//case WM_NCCALCSIZE:		lRes = OnNcCalcSize(uMsg, wParam, lParam, bHandled); break;
 
 default:
 	bHandled = FALSE;

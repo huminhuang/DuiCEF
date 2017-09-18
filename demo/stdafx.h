@@ -31,3 +31,5 @@ using namespace Gdiplus;
 #else
 	#pragma comment(lib, "Duilib/DuiLib.lib")
 #endif
+
+//#include <vld.h>

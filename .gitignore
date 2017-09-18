@@ -286,3 +286,9 @@ __pycache__/
 *.btm.cs
 *.odx.cs
 *.xsd.cs
+
+# 
+DuiLib.lib
+DuiLib_d.lib
+libcef_dll_wrapper.lib
+libcef_dll_wrapper_d.lib

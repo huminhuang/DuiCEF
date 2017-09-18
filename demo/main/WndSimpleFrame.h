@@ -15,7 +15,7 @@ public:
 	virtual ~CWndSimpleFrame(void);
 	  
 	LPCTSTR GetWindowClassName() const { return _T("UISimpleFrame"); }
-	UINT GetClassStyle() const{ return UI_CLASSSTYLE_DIALOG; }
+	UINT GetClassStyle() const{ return UI_CLASSSTYLE_FRAME; }
 	void OnFinalMessage(HWND /*hWnd*/);
 
 	void Init();
@@ -29,7 +29,6 @@ public:
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnNcActivate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnNcHitTest(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
-	LRESULT OnNcPaint(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnNcCalcSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	
 	//消息集成处理函数

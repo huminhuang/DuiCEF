@@ -7,7 +7,7 @@ class CCefMainHandler: public CefBase
 {
 public:
 
-	bool Initialize(HINSTANCE hInstance, bool _multi_threaded_message_loop)
+	bool Initialize(HINSTANCE hInstance, BOOL _multi_threaded_message_loop = TRUE)
 	{
 		m_multi_threaded_message_loop = _multi_threaded_message_loop;
 
@@ -51,19 +51,27 @@ public:
 		return CefInitialize(args, settings, app.get(), NULL);
 	}
 
-	void Shutdown()
+	void RunMessageLoop()
 	{
-		CefShutdown();
+		if (m_multi_threaded_message_loop)
+		{
+			m_main_message_loop_win.Run();
+		}
+		else
+		{
+			CefRunMessageLoop();
+		}
 	}
 
 	~CCefMainHandler()
 	{
-		Shutdown();
+		CefShutdown();
 	}
 
 	// Include the default reference counting implementation.
 	IMPLEMENT_REFCOUNTING(CCefMainHandler);
 
 public:
-	bool m_multi_threaded_message_loop;
+	BOOL m_multi_threaded_message_loop;
+	CMainMessageLoopWin m_main_message_loop_win;
 };

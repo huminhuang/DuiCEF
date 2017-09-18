@@ -8,7 +8,10 @@ template <class T>
 void CreateMainWnd(LPCTSTR pstrName)
 {
 	CWindowWnd *mainFrame = new T;
-	mainFrame->Create(NULL, pstrName,  WS_POPUP | WS_THICKFRAME, 0, 0, 0, -1, -1);
+	mainFrame->Create(NULL, pstrName
+		, WS_OVERLAPPEDWINDOW
+		, WS_EX_OVERLAPPEDWINDOW
+		, 0, 0, 1000, 500);
 	mainFrame->CenterWindow();
 	mainFrame->ShowWindow();
 }
@@ -22,11 +25,8 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
 	// ------------------cef初始化------------------
-	CCefMainHandler cefHandler;
-	if (!cefHandler.Initialize(hInstance, true))
-	{ 
-		return -1;
-	}
+	CCefMainHandler CefMainHandler;
+	if (!CefMainHandler.Initialize(hInstance)) return -1;
 
 	// ------------------duilib初始化------------------
 	CPaintManagerUI::SetInstance(hInstance);
@@ -40,22 +40,12 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	// ------------------显示主窗口------------------
 	CreateMainWnd<CWndSimpleFrame>(_T("SimpleWnd"));
 
+
 	// ------------------开启消息循环------------------
-	// 建议多消息循环模式
-	if (cefHandler.m_multi_threaded_message_loop)
-	{
-		CMainMessageLoopWin main_message_loop;
-		main_message_loop.Run();
-	}
-	else
-	{
-		CefRunMessageLoop();
-	}
+	CefMainHandler.RunMessageLoop();
 	
 
 	// ------------------结束关闭资源------------------
-	cefHandler.Shutdown();
-
 	::CoUninitialize();
 	
 	return 0;

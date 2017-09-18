@@ -6,19 +6,21 @@
 #include "include/base/cef_bind.h"
 
 #include <queue>
+#include <mutex>
 
 //
-#define REQUIRE_MAIN_THREAD   CHECK(CMainMessageLoopWin::GetMainMessageLoop()->RunsTasksOnCurrentThread());
+#define REQUIRE_MAIN_THREAD   CHECK(CMainMessageLoopWin::Get()->RunsTasksOnCurrentThread());
 
 #define PostMainThreadTask(task) \
-	CMainMessageLoopWin::GetMainMessageLoop()->PostClosure(task)
+	CMainMessageLoopWin::Get()->PostClosure(task)
 
 #define RunsTasksOnMainThread \
-	CMainMessageLoopWin::GetMainMessageLoop()->RunsTasksOnCurrentThread()
+	CMainMessageLoopWin::Get()->RunsTasksOnCurrentThread()
 
 class CMainMessageLoopWin
 {
 public:
+	static CMainMessageLoopWin* Get();
 
 	CMainMessageLoopWin();
 	~CMainMessageLoopWin();
@@ -51,10 +53,4 @@ private:
 	DWORD _thread_id;
 
 	DISALLOW_COPY_AND_ASSIGN(CMainMessageLoopWin);
-
-public:
-	static CMainMessageLoopWin* GetMainMessageLoop(){ DCHECK(g_main_message_loop != nullptr); return g_main_message_loop; }
-
-private:
-	static CMainMessageLoopWin*  g_main_message_loop;
 };

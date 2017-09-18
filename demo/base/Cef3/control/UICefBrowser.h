@@ -1,7 +1,8 @@
 #pragma once
 
 #include "include/cef_client.h"
-#include <mutex>
+#include <functional>
+#include <queue>
 
 class CCefBrowserUI;
 
@@ -12,18 +13,14 @@ class CefClientEx
 	, public CefLoadHandler
 {
 public:
-	CefClientEx(CCefBrowserUI* _owner);
+	static CefRefPtr<CefClientEx> Create(CCefBrowserUI* owner);
 
-	void CreateBrowser(HWND hParentWnd, RECT rc, CefString url);
+	void CreateBrowser(HWND hParentWnd, CefString url);
 	void CloseBrowser();
 
 	virtual CefRefPtr<CefLifeSpanHandler>		GetLifeSpanHandler()		{ return this; }
 	virtual CefRefPtr<CefContextMenuHandler>	GetContextMenuHandler()		{ return this; }
 	virtual CefRefPtr<CefLoadHandler>			GetLoadHandler()			{ return this; }
-
-	virtual bool OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
-		CefProcessId source_process,
-		CefRefPtr<CefProcessMessage> message) OVERRIDE;
 
 	virtual bool OnBeforePopup(CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,
@@ -37,47 +34,50 @@ public:
 		CefBrowserSettings& settings,
 		bool* no_javascript_access) OVERRIDE;
 
-	virtual void OnBeforeContextMenu(CefRefPtr<CefBrowser> browser,
+	virtual void OnLoadEnd(CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,
-		CefRefPtr<CefContextMenuParams> params,
-		CefRefPtr<CefMenuModel> model)OVERRIDE;
-
-	virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser)OVERRIDE;
-
-	virtual void OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, int httpStatusCode) OVERRIDE;
-
-private:
-	IMPLEMENT_REFCOUNTING(CefClientEx);
-
-	std::mutex		m_mutex;
-	CCefBrowserUI*	m_owner;
-};
-
-
-class CCefBrowserUI :public CControlUI
-{
-	friend CefClientEx;
-public:
-	CCefBrowserUI(CPaintManagerUI* pPaintManager);
-	~CCefBrowserUI();
-
-	virtual void	SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue);
-	virtual void	DoPaint(HDC hDC, const RECT& rcPaint);
-	virtual void	SetVisible(bool bVisible);
-	virtual void	SetInternVisible(bool bVisible);
-
-	virtual bool OnProcessMessageReceived(CefProcessId source_process, CefRefPtr<CefProcessMessage> message);
+		int httpStatusCode);
 
 	virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser);
 
-	int		GetIdentifier()	const;
-	virtual void Navigate2(LPCTSTR url);
-	virtual void RunJs(const CefString& js);
+protected:
+	IMPLEMENT_REFCOUNTING(CefClientEx);
+
+	CCefBrowserUI*	m_pOwner;
+	CefRefPtr<CefClientEx> m_pSelf;
+};
+
+class CCefBrowserUI :public CControlUI, public IMessageFilterUI
+{
+	friend CefClientEx;
+public:
+	CCefBrowserUI(CPaintManagerUI* ppm);
+	~CCefBrowserUI();
+
+	void SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue);
+
+	void DoInit();
+	void DoPaint(HDC hDC, const RECT& rcPaint);
+
+	void SetVisible(bool bVisible);
+	void SetInternVisible(bool bVisible);
+
+	int	GetIdentifier()	const;
+	void LoadURL(CefString url, const std::function<void(void)>& fnLoadEndTask = nullptr);
+	void ExecuteJS(CefString JsCode);
+	void SetAlpha(UINT8 uAlpha);
+
+	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, bool& bHandled);
 
 protected:
+	void OnResize();
 
-	CPaintManagerUI*		m_pm;
-	CefRefPtr<CefBrowser>	m_pBrowser;
+	void OnLoadEnd(int httpStatusCode);
+	void OnAfterCreated(CefRefPtr<CefBrowser> browser);
+
+private:
 	CefRefPtr<CefClientEx>	m_pClient;
-	bool					m_has_create;
+	CefRefPtr<CefBrowser>	m_pBrowser;
+
+	std::queue<std::function<void(void)>> m_CreateCacheTasks;
 };

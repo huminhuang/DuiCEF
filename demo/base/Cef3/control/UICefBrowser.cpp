@@ -2,161 +2,133 @@
 
 #include "UICefBrowser.h"
 
-#include "base/Cef3/common/cef_protocol.h"
 #include "include/wrapper/cef_closure_task.h"
 #include "include/wrapper/cef_helpers.h"
 
-CefClientEx::CefClientEx(CCefBrowserUI* _owner)
-	: m_owner(_owner)
-{
+#include "../browser/main_message_loop.h"
 
+CefRefPtr<CefClientEx> CefClientEx::Create(CCefBrowserUI* owner)
+{
+	CefRefPtr<CefClientEx> instance(new CefClientEx);
+
+	instance->m_pOwner = owner;
+	instance->m_pSelf = instance;
+
+	return instance;
 }
 
-void CefClientEx::CreateBrowser(HWND hParentWnd, RECT rc, CefString url)
+void CefClientEx::CreateBrowser(HWND hParentWnd, CefString url)
 {
+	REQUIRE_MAIN_THREAD;
+
 	CefWindowInfo info;
 	CefBrowserSettings settings;
-	info.SetAsChild(hParentWnd, rc);
+	info.SetAsPopup(hParentWnd, _T(""));
+	info.style = WS_POPUP | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 
-	CefBrowserHost::CreateBrowser(info, this, url, settings, NULL);
+	CefBrowserHost::CreateBrowser(info, m_pSelf, url, settings, NULL);
 }
 
 void CefClientEx::CloseBrowser()
 {
-	std::lock_guard<std::mutex> _locker(m_mutex);
-	if (m_owner != nullptr)
-	{
-		if (m_owner->m_pBrowser.get())
-		{
-			m_owner->m_pBrowser->GetHost()->CloseBrowser(true);
-		}
-		m_owner = nullptr;
-	}
+	REQUIRE_MAIN_THREAD;
+
+	m_pSelf->Release();
+	m_pOwner = nullptr;
 }
 
-bool CefClientEx::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefProcessId source_process, CefRefPtr<CefProcessMessage> message)
-{
-	CEF_REQUIRE_UI_THREAD();
-
-	if (m_owner != nullptr && browser->GetIdentifier() == m_owner->GetIdentifier())
-	{
-		return m_owner->OnProcessMessageReceived(source_process, message);
-	}
-
-	return false;
-}
-
-bool CefClientEx::OnBeforePopup(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, const CefString& target_url, const CefString& target_frame_name, WindowOpenDisposition target_disposition, bool user_gesture, const CefPopupFeatures& popupFeatures, CefWindowInfo& windowInfo, CefRefPtr<CefClient>& client, CefBrowserSettings& settings, bool* no_javascript_access)
+bool CefClientEx::OnBeforePopup(CefRefPtr<CefBrowser> browser,
+	CefRefPtr<CefFrame> frame,
+	const CefString& target_url,
+	const CefString& target_frame_name,
+	WindowOpenDisposition target_disposition,
+	bool user_gesture,
+	const CefPopupFeatures& popupFeatures,
+	CefWindowInfo& windowInfo,
+	CefRefPtr<CefClient>& client,
+	CefBrowserSettings& settings,
+	bool* no_javascript_access)
 {
 	// 禁止创建新窗口
 	return true;
 }
 
-void CefClientEx::OnBeforeContextMenu(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefContextMenuParams> params, CefRefPtr<CefMenuModel> model)
+void CefClientEx::OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, int httpStatusCode)
 {
-	cef_context_menu_type_flags_t flag = params->GetTypeFlags();
-	if (flag & CM_TYPEFLAG_PAGE)
+	if (!RunsTasksOnMainThread)
 	{
-		model->SetLabel(MENU_ID_STOPLOAD, L"停止加载");
-		model->SetLabel(MENU_ID_REDO, L"重复");
+		PostMainThreadTask(base::Bind(&CefClientEx::OnLoadEnd, m_pSelf, browser, frame, httpStatusCode)); return;
 	}
-	if ((flag & CM_TYPEFLAG_EDITABLE) || (flag & CM_TYPEFLAG_SELECTION))
-	{
-		model->SetLabel(MENU_ID_UNDO, L"撤销");
-		//model->SetLabel(MENU_ID_REDO, L"重做");
-		model->SetLabel(MENU_ID_CUT, L"剪切");
-		model->SetLabel(MENU_ID_COPY, L"复制");
-		model->SetLabel(MENU_ID_PASTE, L"粘贴");
-		model->SetLabel(MENU_ID_DELETE, L"删除");
-		model->SetLabel(MENU_ID_SELECT_ALL, L"全选");
-	}
-	model->Remove(MENU_ID_PRINT);
-#ifndef _DEBUG
-	model->Remove(MENU_ID_VIEW_SOURCE);
-#endif
-	model->Remove(MENU_ID_BACK);
-	model->Remove(MENU_ID_FORWARD);
-	model->Remove(MENU_ID_REDO);
-	if (MENUITEMTYPE_SEPARATOR == model->GetTypeAt(0))
-		model->RemoveAt(0);
-#if 0
-	model->AddItem(MENU_ID_RELOAD, L"刷新");
-#endif
 
-	//不显示右键菜单
-#ifndef _DEBUG
-	for (int i = 0; i < model->GetCount(); i++)
-	{
-		model->RemoveAt(i);
-	}
-#endif
+	REQUIRE_MAIN_THREAD;
+	m_pOwner->OnLoadEnd(httpStatusCode);
 }
 
 void CefClientEx::OnAfterCreated(CefRefPtr<CefBrowser> browser)
 {
-	CEF_REQUIRE_UI_THREAD();
-
-	std::lock_guard<std::mutex> _locker(m_mutex);
-	if (m_owner != nullptr)
+	if (!RunsTasksOnMainThread)
 	{
-		m_owner->OnAfterCreated(browser);
+		PostMainThreadTask(base::Bind(&CefClientEx::OnAfterCreated, m_pSelf, browser)); return;
+	}
+	
+	REQUIRE_MAIN_THREAD;
+
+	if (m_pOwner != nullptr)
+	{
+		m_pOwner->OnAfterCreated(browser);
+	}
+	else
+	{
+		browser->GetHost()->CloseBrowser(true);
 	}
 }
 
-void CefClientEx::OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, int httpStatusCode)
+CCefBrowserUI::CCefBrowserUI(CPaintManagerUI* ppm)
 {
-	CEF_REQUIRE_UI_THREAD();
-
-	// TODO
+	m_pClient = CefClientEx::Create(this);
+	m_pClient->CreateBrowser(ppm->GetPaintWindow(), /*_T("about:blank")*/_T("www.huya.com"));
 }
-
-CCefBrowserUI::CCefBrowserUI(CPaintManagerUI* pPaintManager)
-	: m_pClient(new CefClientEx(this))
-	, m_has_create(false)
-	, m_pm(pPaintManager)
-{
-
-}
-
 
 CCefBrowserUI::~CCefBrowserUI()
 {
+	GetManager()->RemoveMessageFilter(this);
+
 	m_pClient->CloseBrowser();
+
+	if (m_pBrowser.get())
+	{
+		m_pBrowser->GetHost()->CloseBrowser(true);
+	}
 }
 
 void CCefBrowserUI::SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue)
 {
-	if (_tcscmp(pstrName, _T("homepage")) == 0) Navigate2(pstrValue);
+	if (_tcscmp(pstrName, _T("url")) == 0) LoadURL(pstrValue);
+	else if (_tcscmp(pstrName, _T("alpha")) == 0) SetAlpha(_ttoi(pstrValue));
 	else return CControlUI::SetAttribute(pstrName, pstrValue);
+}
+
+void CCefBrowserUI::DoInit()
+{
+	GetManager()->AddMessageFilter(this);
 }
 
 void CCefBrowserUI::DoPaint(HDC hDC, const RECT& rcPaint)
 {
-	if (IsVisible() && m_pBrowser.get())
-	{
-		HWND hBrowserWnd = m_pBrowser->GetHost()->GetWindowHandle();
+	CControlUI::DoPaint(hDC, rcPaint);
 
-		::MoveWindow(hBrowserWnd
-			, m_rcItem.left
-			, m_rcItem.top
-			, m_rcItem.right - m_rcItem.left
-			, m_rcItem.bottom - m_rcItem.top
-			, true);
-
-		if (!::IsWindowVisible(hBrowserWnd))
-		{
-			::ShowWindow(hBrowserWnd, IsVisible());
-		}
-	}
-
-	return CControlUI::DoPaint(hDC, rcPaint);
+	OnResize();
 }
 
 void CCefBrowserUI::SetVisible(bool bVisible)
 {
 	if (m_pBrowser.get())
 	{
-		::ShowWindow(m_pBrowser->GetHost()->GetWindowHandle(), bVisible);
+		m_pBrowser->GetHost()->SetWindowVisibility(bVisible);
+	}
+	else
+	{
+		m_CreateCacheTasks.push([bVisible, this]{ SetVisible(bVisible); });
 	}
 
 	return CControlUI::SetVisible(bVisible);
@@ -166,78 +138,108 @@ void CCefBrowserUI::SetInternVisible(bool bVisible)
 {
 	if (m_pBrowser.get())
 	{
-		::ShowWindow(m_pBrowser->GetHost()->GetWindowHandle(), bVisible);
+		m_pBrowser->GetHost()->SetWindowVisibility(bVisible);
+	}
+	else
+	{
+		m_CreateCacheTasks.push([bVisible, this]{ SetInternVisible(bVisible); });
 	}
 
 	return CControlUI::SetInternVisible(bVisible);
 }
 
-bool CCefBrowserUI::OnProcessMessageReceived(CefProcessId source_process, CefRefPtr<CefProcessMessage> message)
+int CCefBrowserUI::GetIdentifier() const
 {
-	bool bRet = false;
+	return m_pBrowser.get() ? m_pBrowser->GetIdentifier() : -1;
+}
 
-	if (PID_RENDERER == source_process)
+void CCefBrowserUI::LoadURL(CefString url, const std::function<void(void)>& fnLoadEndTask)
+{
+	if (m_pBrowser.get())
 	{
-		bRet = true;
-
-		CefString name = message->GetName();
-		CefRefPtr<CefListValue> list = message->GetArgumentList();
-
-		if (name == CefProtocol::kTestFun)
-		{
-			// TODO
-		}
+		m_pBrowser->GetMainFrame()->LoadURL(url);
 	}
+	else
+	{
+		m_CreateCacheTasks.push([url, fnLoadEndTask, this]{ LoadURL(url, fnLoadEndTask); });
+	}
+}
 
-	return bRet;
+void CCefBrowserUI::ExecuteJS(CefString JsCode)
+{
+	if (m_pBrowser.get())
+	{
+		m_pBrowser->GetMainFrame()->ExecuteJavaScript(JsCode, "", 0);
+	}
+	else
+	{
+		m_CreateCacheTasks.push([JsCode, this]{ ExecuteJS(JsCode); });
+	}
+}
+
+void CCefBrowserUI::SetAlpha(UINT8 uAlpha)
+{
+	if (m_pBrowser.get())
+	{
+		HWND hWnd = m_pBrowser->GetHost()->GetWindowHandle();
+
+		::SetWindowLong(hWnd, GWL_EXSTYLE, ::GetWindowLong(hWnd, GWL_EXSTYLE) | WS_EX_LAYERED);
+		::SetLayeredWindowAttributes(hWnd, 0, uAlpha, LWA_ALPHA);
+	}
+	else
+	{
+		m_CreateCacheTasks.push([uAlpha, this]{ SetAlpha(uAlpha); });
+	}
+}
+
+LRESULT CCefBrowserUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, bool& bHandled)
+{
+	switch (uMsg)
+	{
+	case WM_WINDOWPOSCHANGED:
+	case WM_MOVE:
+	{
+		OnResize();
+	}
+	default:
+		break;
+	}
+	return 0;
+}
+
+void CCefBrowserUI::OnResize()
+{
+	if (m_pBrowser != nullptr)
+	{
+		POINT pt = { m_rcItem.left, m_rcItem.top };
+		::ClientToScreen(GetManager()->GetPaintWindow(), &pt);
+
+		::MoveWindow(m_pBrowser->GetHost()->GetWindowHandle()
+			, pt.x
+			, pt.y
+			, m_rcItem.right - m_rcItem.left
+			, m_rcItem.bottom - m_rcItem.top
+			, false);
+	}
+	else
+	{
+		m_CreateCacheTasks.push([this]{ OnResize(); });
+	}
+}
+
+void CCefBrowserUI::OnLoadEnd(int httpStatusCode)
+{
+
 }
 
 void CCefBrowserUI::OnAfterCreated(CefRefPtr<CefBrowser> browser)
 {
 	m_pBrowser = browser;
-	
-	//刷新界面
-	RECT rcClient = { 0 };
-	HWND hwnd = m_pm->GetPaintWindow();
 
-	::GetClientRect(hwnd, &rcClient);
-	::InvalidateRect(hwnd, &rcClient, true);
-}
-
-void CCefBrowserUI::Navigate2(LPCTSTR url)
-{
-	if (!m_has_create)
+	while (!m_CreateCacheTasks.empty())
 	{
-		m_has_create = true;
-		m_pClient->CreateBrowser(m_pm->GetPaintWindow(), m_rcItem, url);
-	}
-
-	if (m_pBrowser.get())
-	{
-		m_pBrowser->GetMainFrame()->LoadURL(CefString(url));
+		std::function<void(void)> task = move(m_CreateCacheTasks.front());
+		m_CreateCacheTasks.pop();
+		task();
 	}
 }
-
-void CCefBrowserUI::RunJs(const CefString& js)
-{
-	if (m_pBrowser.get())
-	{
-		m_pBrowser->GetMainFrame()->ExecuteJavaScript(js, m_pBrowser->GetMainFrame()->GetURL(), 0);
-	}
-}
-
-int CCefBrowserUI::GetIdentifier() const
-{
-	if (m_pBrowser.get())
-	{
-		return m_pBrowser->GetIdentifier();
-	}
-
-	return -1;
-}
-
-
-
-
-
-

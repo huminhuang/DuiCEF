@@ -1,13 +1,19 @@
 #include "stdafx.h"
 
 #include "main_message_loop.h"
+#include <mutex>
 
-CMainMessageLoopWin* CMainMessageLoopWin::g_main_message_loop = nullptr;
+CMainMessageLoopWin *g_instance = nullptr;
+
+CMainMessageLoopWin* CMainMessageLoopWin::Get()
+{
+	return g_instance;
+}
 
 namespace
 {
-	const wchar_t kWndClass[] = _T("Client_MessageWindow");
-	const wchar_t kTaskMessageName[] = _T("Client_CustomTask");
+	const TCHAR kWndClass[] = _T("Client_MessageWindow");
+	const TCHAR kTaskMessageName[] = _T("Client_CustomTask");
 
 
 	class CefClosureTask : public CefTask {
@@ -71,16 +77,16 @@ CMainMessageLoopWin::CMainMessageLoopWin()
 , _thread_id(GetCurrentThreadId())
 , _message_hwnd_(nullptr)
 {
-	DCHECK(g_main_message_loop == nullptr);
+	DCHECK(g_instance == nullptr);
 
-	g_main_message_loop = this;
+	g_instance = this;
 }
 
 CMainMessageLoopWin::~CMainMessageLoopWin()
 {
-	DCHECK(g_main_message_loop != nullptr);
+	DCHECK(g_instance != nullptr);
 
-	g_main_message_loop = nullptr;
+	g_instance = nullptr;
 }
 
 int CMainMessageLoopWin::Run()
