@@ -3,7 +3,7 @@
 #include "../browser/client_browser_app.h"
 #include "../renderer/client_renderer_app.h"
 
-class CCefMainHandler: public CefBase
+class CCefMainHandler
 {
 public:
 
@@ -67,9 +67,6 @@ public:
 	{
 		CefShutdown();
 	}
-
-	// Include the default reference counting implementation.
-	IMPLEMENT_REFCOUNTING(CCefMainHandler);
 
 public:
 	BOOL m_multi_threaded_message_loop;

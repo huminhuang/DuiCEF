@@ -11,15 +11,17 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="base\Cef3\browser\cef_main_handler.h" />
     <ClInclude Include="base\Cef3\browser\client_browser_app.h" />
     <ClInclude Include="base\Cef3\browser\main_message_loop.h" />
     <ClInclude Include="base\Cef3\cef_util.h" />
-    <ClInclude Include="base\Cef3\common\cef_main.h" />
-    <ClInclude Include="base\Cef3\common\cef_protocol.h" />
+    <ClInclude Include="base\Cef3\common\cef_client_handler.h" />
     <ClInclude Include="base\Cef3\common\client_app.h" />
+    <ClInclude Include="base\Cef3\common\process_message_handler.h" />
     <ClInclude Include="base\Cef3\control\UICefBrowser.h" />
     <ClInclude Include="base\Cef3\renderer\client_renderer_app.h" />
     <ClInclude Include="base\Cef3\renderer\client_v8handler.h" />
+    <ClInclude Include="base\Cef3\renderer\v8_window_function.h" />
     <ClInclude Include="base\ControlEx\ControlEx.h" />
     <ClInclude Include="main\WndSimpleFrame.h" />
     <ClInclude Include="resource.h" />
@@ -28,7 +30,9 @@
   <ItemGroup>
     <ClCompile Include="base\Cef3\browser\client_browser_app.cpp" />
     <ClCompile Include="base\Cef3\browser\main_message_loop.cpp" />
+    <ClCompile Include="base\Cef3\common\cef_client_handler.cpp" />
     <ClCompile Include="base\Cef3\common\client_app.cpp" />
+    <ClCompile Include="base\Cef3\common\process_message_handler.cpp" />
     <ClCompile Include="base\Cef3\control\UICefBrowser.cpp" />
     <ClCompile Include="base\Cef3\renderer\client_renderer_app.cpp" />
     <ClCompile Include="base\Cef3\renderer\client_v8handler.cpp" />

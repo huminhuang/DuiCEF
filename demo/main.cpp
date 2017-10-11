@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "base/Cef3/browser/main_message_loop.h"
-#include "base/Cef3/common/cef_main.h"
+#include "base/Cef3/browser/cef_main_handler.h"
 #include "main/WndSimpleFrame.h"
 
 template <class T>
@@ -9,9 +9,9 @@ void CreateMainWnd(LPCTSTR pstrName)
 {
 	CWindowWnd *mainFrame = new T;
 	mainFrame->Create(NULL, pstrName
-		, WS_OVERLAPPEDWINDOW
+		, WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS
 		, WS_EX_OVERLAPPEDWINDOW
-		, 0, 0, 1000, 500);
+		, 0, 0, 0, 0);
 	mainFrame->CenterWindow();
 	mainFrame->ShowWindow();
 }
@@ -26,13 +26,15 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 
 	// ------------------cef初始化------------------
 	CCefMainHandler CefMainHandler;
-	if (!CefMainHandler.Initialize(hInstance)) return -1;
+	if (!CefMainHandler.Initialize(hInstance, TRUE))
+	{
+		return -1;
+	}
 
 	// ------------------duilib初始化------------------
 	CPaintManagerUI::SetInstance(hInstance);
 	CPaintManagerUI::SetResourcePath(CPaintManagerUI::GetInstancePath() + _T("Skin\\"));
-	HRESULT Hr = ::CoInitialize(NULL);
-	if (FAILED(Hr))
+	if (FAILED(::CoInitialize(NULL)))
 	{
 		return -1;
 	}

@@ -9,7 +9,7 @@
 #include <mutex>
 
 //
-#define REQUIRE_MAIN_THREAD   CHECK(CMainMessageLoopWin::Get()->RunsTasksOnCurrentThread());
+#define CEF_REQUIRE_MAIN_THREAD()   CHECK(CMainMessageLoopWin::Get()->RunsTasksOnCurrentThread());
 
 #define PostMainThreadTask(task) \
 	CMainMessageLoopWin::Get()->PostClosure(task)

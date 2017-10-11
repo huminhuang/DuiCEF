@@ -1,134 +1,55 @@
 #include "stdafx.h"
-
 #include "UICefBrowser.h"
 
-#include "include/wrapper/cef_closure_task.h"
-#include "include/wrapper/cef_helpers.h"
-
-#include "../browser/main_message_loop.h"
-
-CefRefPtr<CefClientEx> CefClientEx::Create(CCefBrowserUI* owner)
+CCefBrowserUI::CCefBrowserUI()
+	: m_bLoadFinish(false)
+	, m_pProcessMessageHandler(new CProcessMessageHandler)
 {
-	CefRefPtr<CefClientEx> instance(new CefClientEx);
 
-	instance->m_pOwner = owner;
-	instance->m_pSelf = instance;
-
-	return instance;
-}
-
-void CefClientEx::CreateBrowser(HWND hParentWnd, CefString url)
-{
-	REQUIRE_MAIN_THREAD;
-
-	CefWindowInfo info;
-	CefBrowserSettings settings;
-	info.SetAsPopup(hParentWnd, _T(""));
-	info.style = WS_POPUP | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
-
-	CefBrowserHost::CreateBrowser(info, m_pSelf, url, settings, NULL);
-}
-
-void CefClientEx::CloseBrowser()
-{
-	REQUIRE_MAIN_THREAD;
-
-	m_pSelf->Release();
-	m_pOwner = nullptr;
-}
-
-bool CefClientEx::OnBeforePopup(CefRefPtr<CefBrowser> browser,
-	CefRefPtr<CefFrame> frame,
-	const CefString& target_url,
-	const CefString& target_frame_name,
-	WindowOpenDisposition target_disposition,
-	bool user_gesture,
-	const CefPopupFeatures& popupFeatures,
-	CefWindowInfo& windowInfo,
-	CefRefPtr<CefClient>& client,
-	CefBrowserSettings& settings,
-	bool* no_javascript_access)
-{
-	// 禁止创建新窗口
-	return true;
-}
-
-void CefClientEx::OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, int httpStatusCode)
-{
-	if (!RunsTasksOnMainThread)
-	{
-		PostMainThreadTask(base::Bind(&CefClientEx::OnLoadEnd, m_pSelf, browser, frame, httpStatusCode)); return;
-	}
-
-	REQUIRE_MAIN_THREAD;
-	m_pOwner->OnLoadEnd(httpStatusCode);
-}
-
-void CefClientEx::OnAfterCreated(CefRefPtr<CefBrowser> browser)
-{
-	if (!RunsTasksOnMainThread)
-	{
-		PostMainThreadTask(base::Bind(&CefClientEx::OnAfterCreated, m_pSelf, browser)); return;
-	}
-	
-	REQUIRE_MAIN_THREAD;
-
-	if (m_pOwner != nullptr)
-	{
-		m_pOwner->OnAfterCreated(browser);
-	}
-	else
-	{
-		browser->GetHost()->CloseBrowser(true);
-	}
-}
-
-CCefBrowserUI::CCefBrowserUI(CPaintManagerUI* ppm)
-{
-	m_pClient = CefClientEx::Create(this);
-	m_pClient->CreateBrowser(ppm->GetPaintWindow(), /*_T("about:blank")*/_T("www.huya.com"));
 }
 
 CCefBrowserUI::~CCefBrowserUI()
 {
-	GetManager()->RemoveMessageFilter(this);
+	m_pClientHandler->Close();
 
-	m_pClient->CloseBrowser();
-
-	if (m_pBrowser.get())
+	if (m_pBrowser != nullptr)
 	{
 		m_pBrowser->GetHost()->CloseBrowser(true);
 	}
 }
 
-void CCefBrowserUI::SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue)
-{
-	if (_tcscmp(pstrName, _T("url")) == 0) LoadURL(pstrValue);
-	else if (_tcscmp(pstrName, _T("alpha")) == 0) SetAlpha(_ttoi(pstrValue));
-	else return CControlUI::SetAttribute(pstrName, pstrValue);
-}
-
 void CCefBrowserUI::DoInit()
 {
-	GetManager()->AddMessageFilter(this);
+	m_pClientHandler = new CCefClientHandler(this);
+
+	CefWindowInfo info;
+	info.SetAsChild(m_pManager->GetPaintWindow(), { 0, 0, 1, 1 });
+
+	m_pClientHandler->CreateBrowser(_CEF_BLANK_, info);
 }
 
 void CCefBrowserUI::DoPaint(HDC hDC, const RECT& rcPaint)
 {
-	CControlUI::DoPaint(hDC, rcPaint);
+	resize();
 
-	OnResize();
+	return CControlUI::DoPaint(hDC, rcPaint);
+}
+
+void CCefBrowserUI::SetAttribute(LPCTSTR pstrName, LPCTSTR pstrValue)
+{
+	if (_tcscmp(pstrName, _T("url")) == 0) Navigate2(pstrValue);
+	else return CControlUI::SetAttribute(pstrName, pstrValue);
 }
 
 void CCefBrowserUI::SetVisible(bool bVisible)
 {
-	if (m_pBrowser.get())
+	if (m_pBrowser != nullptr)
 	{
 		m_pBrowser->GetHost()->SetWindowVisibility(bVisible);
 	}
 	else
 	{
-		m_CreateCacheTasks.push([bVisible, this]{ SetVisible(bVisible); });
+		m_AfterCreatedCacheTasks.push([bVisible, this]{ SetVisible(bVisible); });
 	}
 
 	return CControlUI::SetVisible(bVisible);
@@ -136,110 +57,141 @@ void CCefBrowserUI::SetVisible(bool bVisible)
 
 void CCefBrowserUI::SetInternVisible(bool bVisible)
 {
-	if (m_pBrowser.get())
+	if (m_pBrowser != nullptr)
 	{
 		m_pBrowser->GetHost()->SetWindowVisibility(bVisible);
 	}
 	else
 	{
-		m_CreateCacheTasks.push([bVisible, this]{ SetInternVisible(bVisible); });
+		m_AfterCreatedCacheTasks.push([bVisible, this]{ SetInternVisible(bVisible); });
 	}
 
 	return CControlUI::SetInternVisible(bVisible);
 }
 
-int CCefBrowserUI::GetIdentifier() const
+void CCefBrowserUI::SetProcessMessageHandler(CefRefPtr<CProcessMessageHandler> pHandler)
 {
-	return m_pBrowser.get() ? m_pBrowser->GetIdentifier() : -1;
+	m_pProcessMessageHandler = pHandler;
 }
 
-void CCefBrowserUI::LoadURL(CefString url, const std::function<void(void)>& fnLoadEndTask)
+void CCefBrowserUI::OnProcessMessageReceived(CefRefPtr<CefProcessMessage> message)
 {
-	if (m_pBrowser.get())
+	if (m_pProcessMessageHandler != nullptr)
 	{
-		m_pBrowser->GetMainFrame()->LoadURL(url);
+		m_pProcessMessageHandler->OnProcessMessageReceived(message);
 	}
-	else
-	{
-		m_CreateCacheTasks.push([url, fnLoadEndTask, this]{ LoadURL(url, fnLoadEndTask); });
-	}
-}
-
-void CCefBrowserUI::ExecuteJS(CefString JsCode)
-{
-	if (m_pBrowser.get())
-	{
-		m_pBrowser->GetMainFrame()->ExecuteJavaScript(JsCode, "", 0);
-	}
-	else
-	{
-		m_CreateCacheTasks.push([JsCode, this]{ ExecuteJS(JsCode); });
-	}
-}
-
-void CCefBrowserUI::SetAlpha(UINT8 uAlpha)
-{
-	if (m_pBrowser.get())
-	{
-		HWND hWnd = m_pBrowser->GetHost()->GetWindowHandle();
-
-		::SetWindowLong(hWnd, GWL_EXSTYLE, ::GetWindowLong(hWnd, GWL_EXSTYLE) | WS_EX_LAYERED);
-		::SetLayeredWindowAttributes(hWnd, 0, uAlpha, LWA_ALPHA);
-	}
-	else
-	{
-		m_CreateCacheTasks.push([uAlpha, this]{ SetAlpha(uAlpha); });
-	}
-}
-
-LRESULT CCefBrowserUI::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, bool& bHandled)
-{
-	switch (uMsg)
-	{
-	case WM_WINDOWPOSCHANGED:
-	case WM_MOVE:
-	{
-		OnResize();
-	}
-	default:
-		break;
-	}
-	return 0;
-}
-
-void CCefBrowserUI::OnResize()
-{
-	if (m_pBrowser != nullptr)
-	{
-		POINT pt = { m_rcItem.left, m_rcItem.top };
-		::ClientToScreen(GetManager()->GetPaintWindow(), &pt);
-
-		::MoveWindow(m_pBrowser->GetHost()->GetWindowHandle()
-			, pt.x
-			, pt.y
-			, m_rcItem.right - m_rcItem.left
-			, m_rcItem.bottom - m_rcItem.top
-			, false);
-	}
-	else
-	{
-		m_CreateCacheTasks.push([this]{ OnResize(); });
-	}
-}
-
-void CCefBrowserUI::OnLoadEnd(int httpStatusCode)
-{
-
 }
 
 void CCefBrowserUI::OnAfterCreated(CefRefPtr<CefBrowser> browser)
 {
 	m_pBrowser = browser;
 
-	while (!m_CreateCacheTasks.empty())
+	// 执行缓存的任务
+	CefCacheTask task;
+	while (!m_AfterCreatedCacheTasks.empty())
 	{
-		std::function<void(void)> task = move(m_CreateCacheTasks.front());
-		m_CreateCacheTasks.pop();
+		task = move(m_AfterCreatedCacheTasks.front());
+		m_AfterCreatedCacheTasks.pop();
+
 		task();
+	}
+}
+
+void CCefBrowserUI::OnLoadStart()
+{
+	m_bLoadFinish = false;
+}
+
+void CCefBrowserUI::OnLoadEnd(int httpStatusCode)
+{
+	m_bLoadFinish = true;
+
+	// 执行缓存的任务
+	CefCacheTask task;
+	while (!m_LoadEndCacheTasks.empty())
+	{
+		task = move(m_LoadEndCacheTasks.front());
+		m_LoadEndCacheTasks.pop();
+
+		task();
+	}
+}
+
+void CCefBrowserUI::OnLoadError(int errorCode, const CefString& errorText, const CefString& failedUrl)
+{
+	//m_bLoadFinish = true;
+
+	//// 执行缓存的任务
+	//CefCacheTask task;
+	//while (!m_LoadCacheTasks.empty())
+	//{
+	//	task = move(m_LoadCacheTasks.front());
+	//	m_LoadCacheTasks.pop();
+
+	//	task();
+	//}
+
+	while (!m_LoadEndCacheTasks.empty())
+	{
+		m_LoadEndCacheTasks.pop();
+	}
+}
+
+void CCefBrowserUI::Navigate2(CefString url)
+{
+	if (m_pBrowser != nullptr)
+	{
+		m_pBrowser->GetMainFrame()->LoadURL(url);
+	}
+	else
+	{
+		m_AfterCreatedCacheTasks.push([url, this]
+		{
+			Navigate2(url);
+		});
+	}
+}
+
+void CCefBrowserUI::RunJs(CefString JsCode)
+{
+	if (m_pBrowser != nullptr)
+	{
+		if (m_bLoadFinish)
+		{
+			m_pBrowser->GetMainFrame()->ExecuteJavaScript(JsCode, "", 0);
+		}
+		else
+		{
+			m_LoadEndCacheTasks.push([JsCode, this]{ RunJs(JsCode); });
+		}
+	}
+	else
+	{
+		m_AfterCreatedCacheTasks.push([JsCode, this]{ RunJs(JsCode); });
+	}
+}
+
+void CCefBrowserUI::resize()
+{
+	if (m_pBrowser != nullptr)
+	{
+		POINT pt	= { m_rcItem.left, m_rcItem.top };
+		HWND hwnd	= m_pBrowser->GetHost()->GetWindowHandle();
+
+		if (GetWindowStyle(hwnd) & WS_POPUP)
+		{
+			::ClientToScreen(GetManager()->GetPaintWindow(), &pt);
+		}
+
+		::MoveWindow(hwnd
+			, pt.x
+			, pt.y
+			, m_rcItem.right - m_rcItem.left
+			, m_rcItem.bottom - m_rcItem.top
+			, TRUE);
+	}
+	else
+	{
+		m_AfterCreatedCacheTasks.push([this]{ resize(); });
 	}
 }

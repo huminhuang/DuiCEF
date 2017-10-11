@@ -76,90 +76,12 @@ LRESULT CWndSimpleFrame::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 	return 0;
 }
 
-LRESULT CWndSimpleFrame::OnNcActivate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
-{
-	bHandled = FALSE;
-	if (::IsIconic(*this)) bHandled = TRUE;
-	return (wParam == 0) ? TRUE : FALSE;
-}
-
-LRESULT CWndSimpleFrame::OnNcHitTest(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
-{
-	POINT pt; pt.x = GET_X_LPARAM(lParam); pt.y = GET_Y_LPARAM(lParam);
-	::ScreenToClient(*this, &pt);
-
-	RECT rcClient;
-	::GetClientRect(*this, &rcClient);
-
-	if (!::IsZoomed(*this)) {
-		RECT rcSizeBox = m_pm.GetSizeBox();
-		if (pt.y < rcClient.top + rcSizeBox.top) {
-			if (pt.x < rcClient.left + rcSizeBox.left) return HTTOPLEFT;
-			if (pt.x > rcClient.right - rcSizeBox.right) return HTTOPRIGHT;
-			return HTTOP;
-		}
-		else if (pt.y > rcClient.bottom - rcSizeBox.bottom) {
-			if (pt.x < rcClient.left + rcSizeBox.left) return HTBOTTOMLEFT;
-			if (pt.x > rcClient.right - rcSizeBox.right) return HTBOTTOMRIGHT;
-			return HTBOTTOM;
-		}
-		if (pt.x < rcClient.left + rcSizeBox.left) return HTLEFT;
-		if (pt.x > rcClient.right - rcSizeBox.right) return HTRIGHT;
-	}
-
-	RECT rcCaption = m_pm.GetCaptionRect();
-	if (pt.x >= rcClient.left + rcCaption.left && pt.x < rcClient.right - rcCaption.right \
-		&& pt.y >= rcCaption.top && pt.y < rcCaption.bottom) {
-		CControlUI* pControl = static_cast<CControlUI*>(m_pm.FindControl(pt));
-		if (pControl && _tcscmp(pControl->GetClass(), _T("ButtonUI")) != 0)
-			return HTCAPTION;
-	}
-
-	return HTCLIENT;
-}
-
-LRESULT CWndSimpleFrame::OnNcCalcSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
-{
-	if (wParam == TRUE)
-	{
-		NCCALCSIZE_PARAMS * lpncsp = (NCCALCSIZE_PARAMS *)lParam;;
-
-		lpncsp->rgrc[0].top		-= 5;
-		//lpncsp->rgrc[0].left	-= 7;
-		//lpncsp->rgrc[0].right	+= 7;
-		//lpncsp->rgrc[0].bottom	+= 7;
-
-		//lpncsp->lppos->x = 100;
-
-		int i = 0;
-		i++;
-	}
-	else
-	{
-		int i = 0;
-		i++;
-	}
-	
-	bHandled = FALSE;
-	return 0;
-}
-
 LRESULT CWndSimpleFrame::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	LRESULT lRes = 0;
 	BOOL bHandled = TRUE;
 	switch( uMsg ) {
 	case WM_CREATE:			lRes = OnCreate(uMsg, wParam, lParam, bHandled); break;
-	case WM_SIZE:
-		bHandled = FALSE;
-		break;
-	//case WM_PAINT: break;
-		//case WM_NCACTIVATE:		lRes = OnNcActivate(uMsg, wParam, lParam, bHandled); break;
-		//case WM_NCHITTEST:		lRes = OnNcHitTest(uMsg, wParam, lParam, bHandled); break;
-	//case WM_PAINTCLIPBOARD:
-	//case WM_SYNCPAINT:
-	//case WM_NCPAINT:		break;
-	//case WM_NCCALCSIZE:		lRes = OnNcCalcSize(uMsg, wParam, lParam, bHandled); break;
 
 default:
 	bHandled = FALSE;

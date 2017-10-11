@@ -2,7 +2,6 @@
 
 #include "client_browser_app.h"
 
-
 void ClientAppBrowser::OnBeforeCommandLineProcessing(const CefString& process_type, CefRefPtr<CefCommandLine> command_line)
 {
 	//查看更多的命令行 http://peter.sh/experiments/chromium-command-line-switches/#disable-gpu-process-prelaunch
@@ -13,8 +12,6 @@ void ClientAppBrowser::OnBeforeCommandLineProcessing(const CefString& process_ty
 	command_line->AppendSwitch("no-proxy-server");
 
 	//禁用GPU进程
-	//GPU在处理3D图形动画有明显的优势，但目前我们的页面还未涉及3D动画
-	//所以暂时禁掉，以节省进程数
 	command_line->AppendSwitch("--disable-gpu");
 
 	//设置所有的页面共用一个进程，以节省进程数

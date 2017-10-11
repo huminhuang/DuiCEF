@@ -14,8 +14,7 @@ public:
 		OtherProcess,
 	};
 
-	//自定义方法
-	//获取进程类型
+	// 获取进程类型
 	static ProcessType GetProcessType();
 
 private:

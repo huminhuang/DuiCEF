@@ -12,12 +12,11 @@ bool V8Handler::Execute( const CefString& name, CefRefPtr<CefV8Value> object, \
 	CefRefPtr<CefListValue> args = msg->GetArgumentList();
 
 	// Populate the argument values.
-
 	int _size = arguments.size();
 
 	args->SetSize(_size);
 
-	for (int i = 0; i<_size; i++)
+	for (int i = 0; i < _size; i++)
 	{
 		if (arguments[i]->IsString())
 		{

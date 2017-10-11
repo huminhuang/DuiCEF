@@ -2,8 +2,7 @@
 
 #include "client_renderer_app.h"
 #include "client_v8handler.h"
-
-#include "../common/cef_protocol.h"
+#include "v8_window_function.h"
 
 void ClientAppRender::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context)
 {
@@ -13,7 +12,7 @@ void ClientAppRender::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<
 	// Create an instance of my CefV8Handler object.
 	CefRefPtr<CefV8Handler> handler = new V8Handler();
 
-	for (const auto& funName : CefProtocol::fun_name_set)
+	for (const auto& funName : V8WindowFunciotn::Functions)
 	{
 
 		// Create the "myfunc" function.

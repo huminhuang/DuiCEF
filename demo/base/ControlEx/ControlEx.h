@@ -10,7 +10,7 @@ public:
 	  
 	CControlUI* CreateControl(LPCTSTR pstrClass, CPaintManagerUI *pm) override
 	{
-		if (_tcscmp(pstrClass, _T("Cef")) == 0) return new CCefUI(pm);
+		if (_tcscmp(pstrClass, _T("Cef")) == 0) return new CCefUI();
 		return NULL;
 	}
 };

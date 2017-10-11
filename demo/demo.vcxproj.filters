@@ -49,17 +49,8 @@
     <ClInclude Include="base\Cef3\browser\main_message_loop.h">
       <Filter>base\Cef3\browser</Filter>
     </ClInclude>
-    <ClInclude Include="base\Cef3\common\cef_main.h">
-      <Filter>base\Cef3\common</Filter>
-    </ClInclude>
-    <ClInclude Include="base\Cef3\common\cef_protocol.h">
-      <Filter>base\Cef3\common</Filter>
-    </ClInclude>
     <ClInclude Include="base\Cef3\common\client_app.h">
       <Filter>base\Cef3\common</Filter>
-    </ClInclude>
-    <ClInclude Include="base\Cef3\control\UICefBrowser.h">
-      <Filter>base\Cef3\control</Filter>
     </ClInclude>
     <ClInclude Include="base\Cef3\renderer\client_renderer_app.h">
       <Filter>base\Cef3\renderer</Filter>
@@ -69,6 +60,21 @@
     </ClInclude>
     <ClInclude Include="main\WndSimpleFrame.h">
       <Filter>main</Filter>
+    </ClInclude>
+    <ClInclude Include="base\Cef3\common\cef_client_handler.h">
+      <Filter>base\Cef3\common</Filter>
+    </ClInclude>
+    <ClInclude Include="base\Cef3\common\process_message_handler.h">
+      <Filter>base\Cef3\common</Filter>
+    </ClInclude>
+    <ClInclude Include="base\Cef3\control\UICefBrowser.h">
+      <Filter>base\Cef3\control</Filter>
+    </ClInclude>
+    <ClInclude Include="base\Cef3\renderer\v8_window_function.h">
+      <Filter>base\Cef3\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="base\Cef3\browser\cef_main_handler.h">
+      <Filter>base\Cef3\browser</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -83,9 +89,6 @@
     <ClCompile Include="base\Cef3\common\client_app.cpp">
       <Filter>base\Cef3\common</Filter>
     </ClCompile>
-    <ClCompile Include="base\Cef3\control\UICefBrowser.cpp">
-      <Filter>base\Cef3\control</Filter>
-    </ClCompile>
     <ClCompile Include="base\Cef3\renderer\client_renderer_app.cpp">
       <Filter>base\Cef3\renderer</Filter>
     </ClCompile>
@@ -94,6 +97,15 @@
     </ClCompile>
     <ClCompile Include="main\WndSimpleFrame.cpp">
       <Filter>main</Filter>
+    </ClCompile>
+    <ClCompile Include="base\Cef3\common\cef_client_handler.cpp">
+      <Filter>base\Cef3\common</Filter>
+    </ClCompile>
+    <ClCompile Include="base\Cef3\common\process_message_handler.cpp">
+      <Filter>base\Cef3\common</Filter>
+    </ClCompile>
+    <ClCompile Include="base\Cef3\control\UICefBrowser.cpp">
+      <Filter>base\Cef3\control</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
