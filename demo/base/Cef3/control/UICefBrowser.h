@@ -49,6 +49,7 @@ private:
 	CefRefPtr<CCefClientHandler>		m_pClientHandler;
 	CefRefPtr<CefBrowser>				m_pBrowser;
 	CefRefPtr<CProcessMessageHandler>	m_pProcessMessageHandler;
+	CefString							m_sNavigateURL;
 
 	// browser创建完成前缓存的任务
 	std::queue<CefCacheTask>	m_AfterCreatedCacheTasks;

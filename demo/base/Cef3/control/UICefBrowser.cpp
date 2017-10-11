@@ -4,6 +4,7 @@
 CCefBrowserUI::CCefBrowserUI()
 	: m_bLoadFinish(false)
 	, m_pProcessMessageHandler(new CProcessMessageHandler)
+	, m_sNavigateURL(_CEF_BLANK_)
 {
 
 }
@@ -25,7 +26,7 @@ void CCefBrowserUI::DoInit()
 	CefWindowInfo info;
 	info.SetAsChild(m_pManager->GetPaintWindow(), { 0, 0, 1, 1 });
 
-	m_pClientHandler->CreateBrowser(_CEF_BLANK_, info);
+	m_pClientHandler->CreateBrowser(m_sNavigateURL, info);
 }
 
 void CCefBrowserUI::DoPaint(HDC hDC, const RECT& rcPaint)
@@ -139,6 +140,8 @@ void CCefBrowserUI::OnLoadError(int errorCode, const CefString& errorText, const
 
 void CCefBrowserUI::Navigate2(CefString url)
 {
+	m_sNavigateURL = url;
+
 	if (m_pBrowser != nullptr)
 	{
 		m_pBrowser->GetMainFrame()->LoadURL(url);
