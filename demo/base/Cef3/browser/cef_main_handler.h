@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../browser/client_browser_app.h"
+#include "../browser/main_message_loop.h"
 #include "../renderer/client_renderer_app.h"
 
 class CCefMainHandler
