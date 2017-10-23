@@ -1,13 +1,11 @@
 #pragma once
 
 #include "../browser/client_browser_app.h"
-#include "../browser/main_message_loop.h"
 #include "../renderer/client_renderer_app.h"
 
 class CCefMainHandler
 {
 public:
-
 	bool Initialize(HINSTANCE hInstance, BOOL _multi_threaded_message_loop = TRUE)
 	{
 		m_multi_threaded_message_loop = _multi_threaded_message_loop;
@@ -56,7 +54,7 @@ public:
 	{
 		if (m_multi_threaded_message_loop)
 		{
-			m_main_message_loop_win.Run();
+			CPaintManagerUI::MessageLoop();
 		}
 		else
 		{
@@ -71,5 +69,4 @@ public:
 
 public:
 	BOOL m_multi_threaded_message_loop;
-	CMainMessageLoopWin m_main_message_loop_win;
 };
