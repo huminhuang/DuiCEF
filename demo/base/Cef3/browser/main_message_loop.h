@@ -22,7 +22,6 @@ public:
 
 private:
 
-	// Window procedure for the message window.
 	static LRESULT CALLBACK MessageWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 	void PostTaskInternal(CefRefPtr<CefTask> task);

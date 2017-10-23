@@ -3,6 +3,8 @@
 #include "include/cef_client.h"
 #include <functional>
 
+#define _CEF_BLANK_ _T("about:blank")
+
 class CCefBrowserUI;
 
 class CCefClientHandler
@@ -20,7 +22,8 @@ public:
 	CefRefPtr<CefLoadHandler>			GetLoadHandler()			{ return this; }
 	CefRefPtr<CefDragHandler>			GetDragHandler()			{ return this; }
 
-	void CreateBrowser(CefString url, CefWindowInfo& info);
+	void CreateBrowser(HWND hParentWnd, RECT rc);
+	void CloseBrowser(CefRefPtr<CefBrowser> browser);
 	void Close();
 
 	bool OnProcessMessageReceived(CefRefPtr<CefBrowser> browser

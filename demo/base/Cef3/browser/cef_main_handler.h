@@ -35,7 +35,7 @@ public:
 		}
 
 		// 子进程在这里阻塞，直到退出
-		int exit_code = CefExecuteProcess(args, app.get(), NULL);
+		int exit_code = CefExecuteProcess(args, app, NULL);
 		if (exit_code >= 0)
 		{
 			exit(exit_code);
@@ -47,7 +47,7 @@ public:
 		settings.multi_threaded_message_loop = _multi_threaded_message_loop;
 		CefString(&settings.locale).FromWString(L"zh-CN");
 
-		return CefInitialize(args, settings, app.get(), NULL);
+		return CefInitialize(args, settings, app, NULL);
 	}
 
 	void RunMessageLoop()
@@ -59,10 +59,10 @@ public:
 		else
 		{
 			CefRunMessageLoop();
-		}
+		}	
 	}
 
-	~CCefMainHandler()
+	void Shutdown()
 	{
 		CefShutdown();
 	}

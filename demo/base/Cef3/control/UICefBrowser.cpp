@@ -4,9 +4,9 @@
 CCefBrowserUI::CCefBrowserUI()
 	: m_bLoadFinish(false)
 	, m_pProcessMessageHandler(new CProcessMessageHandler)
-	, m_sNavigateURL(_CEF_BLANK_)
+	, m_pClientHandler(new CCefClientHandler(this))
 {
-
+	
 }
 
 CCefBrowserUI::~CCefBrowserUI()
@@ -15,18 +15,13 @@ CCefBrowserUI::~CCefBrowserUI()
 
 	if (m_pBrowser != nullptr)
 	{
-		m_pBrowser->GetHost()->CloseBrowser(true);
+		m_pClientHandler->CloseBrowser(m_pBrowser);
 	}
 }
 
 void CCefBrowserUI::DoInit()
 {
-	m_pClientHandler = new CCefClientHandler(this);
-
-	CefWindowInfo info;
-	info.SetAsChild(m_pManager->GetPaintWindow(), { 0, 0, 1, 1 });
-
-	m_pClientHandler->CreateBrowser(m_sNavigateURL, info);
+	m_pClientHandler->CreateBrowser(m_pManager->GetPaintWindow(), m_rcItem);
 }
 
 void CCefBrowserUI::DoPaint(HDC hDC, const RECT& rcPaint)
@@ -120,18 +115,6 @@ void CCefBrowserUI::OnLoadEnd(int httpStatusCode)
 
 void CCefBrowserUI::OnLoadError(int errorCode, const CefString& errorText, const CefString& failedUrl)
 {
-	//m_bLoadFinish = true;
-
-	//// 执行缓存的任务
-	//CefCacheTask task;
-	//while (!m_LoadCacheTasks.empty())
-	//{
-	//	task = move(m_LoadCacheTasks.front());
-	//	m_LoadCacheTasks.pop();
-
-	//	task();
-	//}
-
 	while (!m_LoadEndCacheTasks.empty())
 	{
 		m_LoadEndCacheTasks.pop();
@@ -140,8 +123,6 @@ void CCefBrowserUI::OnLoadError(int errorCode, const CefString& errorText, const
 
 void CCefBrowserUI::Navigate2(CefString url)
 {
-	m_sNavigateURL = url;
-
 	if (m_pBrowser != nullptr)
 	{
 		m_pBrowser->GetMainFrame()->LoadURL(url);

@@ -8,13 +8,22 @@
 #include "../browser/main_message_loop.h"
 #include "../control/UICefBrowser.h"
 
-void CCefClientHandler::CreateBrowser(CefString url, CefWindowInfo& info)
+void CCefClientHandler::CreateBrowser(HWND hParentWnd, RECT rc)
 {
 	CEF_REQUIRE_MAIN_THREAD();
 
 	CefBrowserSettings settings;
+	CefWindowInfo info;
+	info.SetAsChild(hParentWnd, rc);
 
-	CefBrowserHost::CreateBrowser(info, this, url, settings, NULL);
+	CefBrowserHost::CreateBrowser(info, this, _CEF_BLANK_, settings, NULL);
+}
+
+void CCefClientHandler::CloseBrowser(CefRefPtr<CefBrowser> browser)
+{
+	CEF_REQUIRE_MAIN_THREAD();
+
+	browser->GetHost()->CloseBrowser(true);
 }
 
 void CCefClientHandler::Close()

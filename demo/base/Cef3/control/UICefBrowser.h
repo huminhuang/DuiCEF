@@ -7,8 +7,6 @@
 #include "../common/process_message_handler.h"
 #include "../common/cef_client_handler.h"
 
-#define _CEF_BLANK_ _T("about:blank")
-
 using CefCacheTask = std::function<void(void)>;
 
 class CCefBrowserUI : public CControlUI
@@ -49,7 +47,6 @@ private:
 	CefRefPtr<CCefClientHandler>		m_pClientHandler;
 	CefRefPtr<CefBrowser>				m_pBrowser;
 	CefRefPtr<CProcessMessageHandler>	m_pProcessMessageHandler;
-	CefString							m_sNavigateURL;
 
 	// browser创建完成前缓存的任务
 	std::queue<CefCacheTask>	m_AfterCreatedCacheTasks;

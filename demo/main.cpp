@@ -4,7 +4,7 @@
 #include "main/WndSimpleFrame.h"
 
 template <class T>
-void CreateMainWnd(LPCTSTR pstrName)
+CWindowWnd* CreateMainWnd(LPCTSTR pstrName)
 {
 	CWindowWnd *mainFrame = new T;
 	mainFrame->Create(NULL, pstrName
@@ -13,6 +13,8 @@ void CreateMainWnd(LPCTSTR pstrName)
 		, 0, 0, 0, 0);
 	mainFrame->CenterWindow();
 	mainFrame->ShowWindow();
+
+	return mainFrame;
 }
 
 int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
@@ -23,7 +25,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
-	// ------------------cef初始化------------------
+	// ------------------CEF初始化------------------
 	CCefMainHandler CefMainHandler;
 	if (!CefMainHandler.Initialize(hInstance, TRUE))
 	{
@@ -47,6 +49,8 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	
 
 	// ------------------结束关闭资源------------------
+	CefMainHandler.Shutdown();
+
 	::CoUninitialize();
 	
 	return 0;
