@@ -26,9 +26,6 @@ public:
 	// CefClientHandler回调接口
 	void OnProcessMessageReceived(CefRefPtr<CefProcessMessage> message);
 	void OnAfterCreated(CefRefPtr<CefBrowser> browser);
-	void OnLoadStart();
-	void OnLoadEnd(int httpStatusCode);
-	void OnLoadError(int errorCode, const CefString& errorText, const CefString& failedUrl);
 
 
 	// 自定义接口
@@ -50,8 +47,4 @@ private:
 
 	// browser创建完成前缓存的任务
 	std::queue<CefCacheTask>	m_AfterCreatedCacheTasks;
-
-	// 页面加载完成前缓存的任务
-	bool m_bLoadFinish;
-	std::queue<CefCacheTask>	m_LoadEndCacheTasks;
 };

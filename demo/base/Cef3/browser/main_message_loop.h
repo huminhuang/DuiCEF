@@ -6,9 +6,9 @@
 #include "include/base/cef_bind.h"
 
 //
-#define CEF_REQUIRE_MAIN_THREAD()   CHECK(_cef_main_win_handler.RunsTasksOnCurrentThread());
-#define PostMainThreadTask(task)	_cef_main_win_handler.PostClosure(task)
-#define RunsTasksOnMainThread		_cef_main_win_handler.RunsTasksOnCurrentThread()
+#define CEF_REQUIRE_MAIN_THREAD()		CHECK(CEF_RUN_ON_MAIN_THREAD());
+#define CEF_POST_MAIN_THREAD_TASK(task)	_cef_main_win_handler.PostClosure(task)
+#define CEF_RUN_ON_MAIN_THREAD()		_cef_main_win_handler.RunsTasksOnCurrentThread()
 
 class CMainMessageLoopWin
 {

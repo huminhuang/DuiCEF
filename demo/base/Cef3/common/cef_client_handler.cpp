@@ -55,17 +55,10 @@ void CCefClientHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser)
 {
 	CEF_REQUIRE_UI_THREAD();
 
-	exec_on_main_thread([this, browser]
-	{
-		if (m_pOwner != nullptr)
-		{
-			m_pOwner->OnAfterCreated(browser);
-		}
-		else
-		{
-			browser->GetHost()->CloseBrowser(true);
-		}
-	});
+	//exec_on_main_thread([this, browser]
+	//{
+	//	m_pOwner->OnAfterCreated(browser);
+	//});
 }
 
 void CCefClientHandler::OnBeforeContextMenu(CefRefPtr<CefBrowser> browser
@@ -85,11 +78,6 @@ void CCefClientHandler::OnBeforeContextMenu(CefRefPtr<CefBrowser> browser
 void CCefClientHandler::OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame)
 {
 	CEF_REQUIRE_UI_THREAD();
-
-	exec_on_main_thread([this]
-	{
-		m_pOwner->OnLoadStart();
-	});
 }
 
 void CCefClientHandler::OnLoadEnd(CefRefPtr<CefBrowser> browser
@@ -98,9 +86,9 @@ void CCefClientHandler::OnLoadEnd(CefRefPtr<CefBrowser> browser
 {
 	CEF_REQUIRE_UI_THREAD();
 
-	exec_on_main_thread([this, httpStatusCode]
+	exec_on_main_thread([this, browser]
 	{
-		m_pOwner->OnLoadEnd(httpStatusCode);
+		m_pOwner->OnAfterCreated(browser);
 	});
 }
 
@@ -111,11 +99,6 @@ void CCefClientHandler::OnLoadError(CefRefPtr<CefBrowser> browser
 	, const CefString& failedUrl)
 {
 	CEF_REQUIRE_UI_THREAD();
-
-	exec_on_main_thread([this, errorCode, errorText, failedUrl]
-	{
-		m_pOwner->OnLoadError(errorCode, errorText, failedUrl);
-	});
 }
 
 bool CCefClientHandler::OnDragEnter(CefRefPtr<CefBrowser> browser, CefRefPtr<CefDragData> dragData, DragOperationsMask mask)
@@ -134,9 +117,9 @@ void CCefClientHandler::exec_on_main_thread(std::function<void(void)> task)
 	if (m_pOwner == nullptr)
 		return;
 
-	if (!RunsTasksOnMainThread)
+	if (!CEF_RUN_ON_MAIN_THREAD())
 	{
-		PostMainThreadTask(base::Bind(&CCefClientHandler::exec_on_main_thread, this, task)); 
+		CEF_POST_MAIN_THREAD_TASK(base::Bind(&CCefClientHandler::exec_on_main_thread, this, task)); 
 	}
 	else
 	{
